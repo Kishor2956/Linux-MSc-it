@@ -1,181 +1,256 @@
 #!/bin/bash
 
-if [ $EUDI -ne 0 ]
-then
-	echo "Please Run With Sudo"
-	exit
-fi
+echo "========== User Management =========="
+echo "1. Add User"
+echo "2. Delete User"
+echo "3. Modify Username"
+echo "4. Change Password"
+echo "5. Lock User"
+echo "6. Unlock User"
+echo "7. Display User Information"
+echo "8. Display User Groups"
+echo "9. Display All Users"
+echo "10. Check User Exists"
+echo "11. Display Logged-in Users"
+echo "12. Change Login Shell"
+echo "13. Change Home Directory"
+echo "14. Set Account Expiration"
+echo "15. Display Account Aging"
+echo "16. Delete User with Home Directory"
+echo "17. Exit"
+echo "===================================="
 
 while true
 do
-	echo "---USER MANAGEMENT---"
-	echo "1. Create A New User"
-	echo "2. Delete An Existing User"
-	echo "3. Modify Usert Information"
-	echo "4. Set Or Change User Password"
-	echo "5. Lock a User Account"
-	echo "6. Unlock a User Account"
-	echo "7. Display User Information"
-	echo "8. Display the Groups to Which a User Belong"
-	echo "9. Display  All System User"
-	echo "10. Check Whether a User Exists"
-	echo "11. Display Currently Logged-In Users"
-	echo "12. Change a User's  Login Shell"
-	echo "13. Change a User's Home History"
-	echo "14. Set Account Expiration Date"
-	echo "15. Display Account Again Information"
-	echo "16. Remove a User Along With Their Home Directoty"
-	echo "17. Exit"
-	echo "--------------------------"
+    read -p "Enter your choice: " ch
 
-	read -p "Enter Your Choice :" choice
+    case $ch in
 
-	case $choice  in
+    1)
+        read -p "Enter username: " username
 
-	1) read -p "Enter Username : " user
-	
-	if id "$user" &>/dev/null
-	then
-		echo "User Allready Exists."
-	else
-		useradd "$user"
-		echo "User Is Created."
-	fi
-	;;
+        if id "$username" &>/dev/null
+        then
+            echo "User already exists!"
+        else
+            sudo useradd -m "$username"
 
-	2) read -p "Enter Usename :" user
-
-	if id "$user" &>/dev/null
-	then
-		read -p  "Are You Sure?(y/n):" ans
-
-	if [ "$ans" = "y" ]
+            if [ $? -eq 0 ]
             then
-                userdel "$user"
-                echo "User Deleted."
+                echo "User added successfully!"
+            else
+                echo "User add failed!"
+            fi
+        fi
+        ;;
+
+    2)
+        read -p "Enter username: " username
+
+        if id "$username" &>/dev/null
+        then
+            read -p "Delete this user? (y/n): " confirm
+
+            if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]
+            then
+                sudo userdel "$username"
+
+                if [ $? -eq 0 ]
+                then
+                    echo "User deleted successfully!"
+                else
+                    echo "User delete failed!"
+                fi
+            else
+                echo "Delete cancelled."
             fi
         else
-            echo "User Does Not Exist."
+            echo "User not found!"
         fi
         ;;
 
-        3) read -p "Enter username : " user
+    3)
+        read -p "Enter old username: " oldName
+        read -p "Enter new username: " newName
 
-        if id "$user" &>/dev/null
+        if id "$oldName" &>/dev/null
         then
-            read -p "Enter New Full Name : " name
-            usermod -c "$name" "$user"
-            echo "User Modified."
+            sudo usermod -l "$newName" "$oldName"
+
+            if [ $? -eq 0 ]
+            then
+                echo "Username changed successfully!"
+            else
+                echo "Username change failed!"
+            fi
         else
-            echo "User Does Not Exist."
+            echo "User not found!"
         fi
         ;;
 
-        4) read -p "Enter Username : " user
+    4)
+        read -p "Enter username: " username
 
-        if id "$user" &>/dev/null
+        if id "$username" &>/dev/null
         then
-            passwd "$user"
+            sudo passwd "$username"
         else
-            echo "User Does Not Exist."
+            echo "User not found!"
         fi
         ;;
 
-        5) read -p "Enter Username : " user
+    5)
+        read -p "Enter username: " username
 
-        if id "$user" &>/dev/null
+        if id "$username" &>/dev/null
         then
-            passwd -l "$user"
-            echo "User Locked."
+            sudo usermod -L "$username"
+            echo "User account locked!"
         else
-            echo "User Does Not Exist."
+            echo "User not found!"
         fi
         ;;
 
-        6) read -p "Enter Username : " user
+    6)
+        read -p "Enter username: " username
 
-        if id "$user" &>/dev/null
+        if id "$username" &>/dev/null
         then
-            passwd -u "$user"
-            echo "User Unlocked."
+            sudo usermod -U "$username"
+            echo "User account unlocked!"
         else
-            echo "User Does Not Exist."
+            echo "User not found!"
         fi
         ;;
 
-        7) read -p "Enter Username : " user
+    7)
+        read -p "Enter username: " username
 
-        if id "$user" &>/dev/null
+        if id "$username" &>/dev/null
         then
-            id "$user"
+            id "$username"
+            getent passwd "$username"
         else
-            echo "User Does Not Exist."
+            echo "User not found!"
         fi
         ;;
 
-        8) read -p "Enter Username : " user
+    8)
+        read -p "Enter username: " username
 
-        if id "$user" &>/dev/null
+        if id "$username" &>/dev/null
         then
-            groups "$user"
+            echo "User Groups:"
+            id -nG "$username"
         else
-            echo "User Does Not Exist."
+            echo "User not found!"
         fi
         ;;
 
-        9) echo "All System Users :"
+    9)
+        echo "All System Users:"
         cut -d: -f1 /etc/passwd
         ;;
 
-        10) read -p "Enter Username : " user
+    10)
+        read -p "Enter username: " username
 
-        if id "$user" &>/dev/null
+        if id "$username" &>/dev/null
         then
-            echo "User Exists."
+            echo "User exists!"
         else
-            echo "User Does Not Exist."
+            echo "User does not exist!"
         fi
         ;;
 
+    11)
+        echo "Currently Logged-in Users:"
         who
         ;;
 
-        11) read -p "Enter Username : " user
+    12)
+        read -p "Enter username: " username
+        read -p "Enter login shell: " shell
 
-        if id "$user" &>/dev/null
+        if id "$username" &>/dev/null
         then
-            read -p "Enter New Shell : " shell
-            usermod -s "$shell" "$user"
-            echo "Shell Changed."
+            sudo usermod -s "$shell" "$username"
+            echo "Login shell changed successfully!"
         else
-            echo "User Does Not Exist."
+            echo "User not found!"
         fi
         ;;
 
-        13) read -p "Enter Username : " user
+    13)
+        read -p "Enter username: " username
+        read -p "Enter new home directory: " home
 
-        if id "$user" &>/dev/null
+        if id "$username" &>/dev/null
         then
-            read -p "Enter New Home Directory : " home
-            usermod -d "$home" -m "$user"
-            echo "Home Directory Changed."
+            sudo usermod -d "$home" -m "$username"
+            echo "Home directory changed successfully!"
         else
-            echo "User Does Not Exist."
+            echo "User not found!"
         fi
         ;;
 
-        13) read -p "Enter Username : " user
+    14)
+        read -p "Enter username: " username
+        read -p "Enter expiration date (YYYY-MM-DD): " date
 
-        if id "$user" &>/dev/null
+        if id "$username" &>/dev/null
         then
-            read -p "Enter Expiry Date (YYYY-MM-DD): " date
-            chage -E "$date" "$user"
-            echo "Expiry Date Set."
+            sudo chage -E "$date" "$username"
+            echo "Expiration date set successfully!"
         else
-            echo "User Does Not Exist."
+            echo "User not found!"
         fi
         ;;
 
-        17) read -p "Enter Username : " user
+    15)
+        read -p "Enter username: " username
 
-        if id "$user" &>/dev/null
+        if id "$username" &>/dev/null
+        then
+            sudo chage -l "$username"
+        else
+            echo "User not found!"
+        fi
+        ;;
+
+    16)
+        read -p "Enter username: " username
+
+        if id "$username" &>/dev/null
+        then
+            read -p "Delete user and home directory? (y/n): " confirm
+
+            if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]
+            then
+                sudo userdel -r "$username"
+
+                if [ $? -eq 0 ]
+                then
+                    echo "User and home directory deleted!"
+                else
+                    echo "Delete failed!"
+                fi
+            else
+                echo "Delete cancelled."
+            fi
+        else
+            echo "User not found!"
+        fi
+        ;;
+
+    17)
+        echo "Exiting..."
+        exit 0
+        ;;
+
+    *)
+        echo "Invalid choice!"
+        ;;
+
+    esac
+done
